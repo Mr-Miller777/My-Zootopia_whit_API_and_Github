@@ -2,9 +2,16 @@ import json
 
 
 def load_data(file_path):
-    """ Loads a JSON file """
-    with open(file_path, "r") as handle:
-        return json.load(handle)
+    """ Loads a JSON file with error handling for missing files. """
+    try:
+        with open(file_path, "r") as handle:
+            return json.load(handle)
+    except FileNotFoundError:
+        print(f"Error: The file '{file_path}' was not found.")
+    except json.JSONDecodeError:
+        print(f"Error: The file '{file_path}' contains invalid JSON.")
+        sys.exit(1)
+
 
 def get_animal_data(animals_data):
     """
@@ -15,18 +22,23 @@ def get_animal_data(animals_data):
     - The first location from the list of locations
     - Type
     """
-    output = ""  # define an empty string
-    for animal_obj in animals_data:
-        # append information to each string
-        output += serialize_animal(animal_obj)
-    return output
+    return ''.join(serialize_animal(animal_obj) for animal_obj in animals_data)
+
 
 def serialize_animal(animal_obj):
+    """Creates an HTML list item string for a single animal, safely accessing nested data."""
     output = ""
     name = animal_obj.get("name")
-    diet = animal_obj["characteristics"].get("diet")
-    location = animal_obj["locations"][0]
-    animal_type = animal_obj["characteristics"].get("type")
+
+    # Safe access to characteristics dictionary
+    characteristics = animal_obj.get("characteristics", {})
+    diet = characteristics.get("diet")
+    animal_type = characteristics.get("type")
+
+    # Safe access to locations list (take the first location if it exists)
+    locations = animal_obj.get("locations", [])
+    location = locations[0] if locations else None
+
     output += '<li class = "cards_item">'
     if name is not None:
         output += f'<div class="card__title">Name: {name}</div>\n'
@@ -42,14 +54,20 @@ def serialize_animal(animal_obj):
     output += '\n'  # Empty print for spacing
     return output
 
+
 def read_template(template_path):
-    with open(template_path, "r") as fileobj:
-        template = fileobj.read()
-        return template
+    """Reads an HTML template file with error handling."""
+    try:
+        with open(template_path, "r") as fileobj:
+            return fileobj.read()
+    except FileNotFoundError:
+        print(f"Error: The template file '{template_path}' was not found.")
+
 
 def add_animals_to_template(template, output):
     animals_text = template.replace("__REPLACE_ANIMALS_INFO__", output)
     return animals_text
+
 
 def write_animals_file(animals_text):
     with open("animals.html", "w") as fileobj:

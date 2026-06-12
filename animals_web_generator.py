@@ -1,16 +1,21 @@
-import json
+import os
+import requests
+from dotenv import load_dotenv
 
 
-def load_data(file_path):
-    """ Loads a JSON file with error handling for missing files. """
-    try:
-        with open(file_path, "r") as handle:
-            return json.load(handle)
-    except FileNotFoundError:
-        print(f"Error: The file '{file_path}' was not found.")
-    except json.JSONDecodeError:
-        print(f"Error: The file '{file_path}' contains invalid JSON.")
-        sys.exit(1)
+def get_data_from_api(api_key, animal):
+
+    url = f"https://api.api-ninjas.com/v1/animals?name={animal}"
+    headers = {'X-Api-Key': api_key}
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == requests.codes.ok:
+        # Die Daten als JSON-Dictionary ausgeben
+        animals_data = response.json()
+        return (animals_data)
+    else:
+        print(f'Fehler: {response.status_code} - {response.text}')
 
 
 def get_animal_data(animals_data):
@@ -75,7 +80,10 @@ def write_animals_file(animals_text):
 
 
 def main():
-    animals_data = load_data('animals_data.json')
+    load_dotenv()
+    api_key = os.getenv("API_KEY")
+    animal = 'fox'
+    animals_data = get_data_from_api(api_key, animal)
     output = get_animal_data(animals_data)
     template = read_template('animals_template.html')
     animals_text = add_animals_to_template(template, output)

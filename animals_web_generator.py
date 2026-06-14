@@ -3,6 +3,15 @@ import requests
 from dotenv import load_dotenv
 
 
+def get_animal_from_user():
+    while True:
+            animal = input("Enter a name of an animal: ").strip()
+            if not animal:
+                print("Animal name cannot be empty.")
+            else:
+                return animal
+
+
 def get_data_from_api(api_key, animal):
 
     url = f"https://api.api-ninjas.com/v1/animals?name={animal}"
@@ -77,12 +86,13 @@ def add_animals_to_template(template, output):
 def write_animals_file(animals_text):
     with open("animals.html", "w") as fileobj:
         fileobj.write(animals_text)
+    print("Website was successfully generated to the file animals.html.")
 
 
 def main():
     load_dotenv()
     api_key = os.getenv("API_KEY")
-    animal = 'fox'
+    animal = get_animal_from_user()
     animals_data = get_data_from_api(api_key, animal)
     output = get_animal_data(animals_data)
     template = read_template('animals_template.html')

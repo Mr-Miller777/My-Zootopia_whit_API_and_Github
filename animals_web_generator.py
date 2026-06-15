@@ -94,7 +94,10 @@ def main():
     api_key = os.getenv("API_KEY")
     animal = get_animal_from_user()
     animals_data = get_data_from_api(api_key, animal)
-    output = get_animal_data(animals_data)
+    if len(animals_data) == 0:
+        output = f"<h2>The animal '{animal}' does not exist.</h2>"
+    else:
+        output = get_animal_data(animals_data)
     template = read_template('animals_template.html')
     animals_text = add_animals_to_template(template, output)
     write_animals_file(animals_text)

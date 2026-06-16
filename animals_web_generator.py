@@ -1,6 +1,4 @@
-import os
-import requests
-from dotenv import load_dotenv
+import data_fetcher
 
 
 def get_animal_from_user():
@@ -10,33 +8,6 @@ def get_animal_from_user():
                 print("Animal name cannot be empty.")
             else:
                 return animal
-
-
-def get_data_from_api(api_key, animal):
-
-    url = f"https://api.api-ninjas.com/v1/animals?name={animal}"
-    headers = {'X-Api-Key': api_key}
-
-    response = requests.get(url, headers=headers)
-
-    if response.status_code == requests.codes.ok:
-        # Die Daten als JSON-Dictionary ausgeben
-        animals_data = response.json()
-        return (animals_data)
-    else:
-        print(f'Fehler: {response.status_code} - {response.text}')
-
-
-def get_animal_data(animals_data):
-    """
-    Iterate through the animals_data and get
-    the following information for each one:
-    - Name
-    - Diet
-    - The first location from the list of locations
-    - Type
-    """
-    return ''.join(serialize_animal(animal_obj) for animal_obj in animals_data)
 
 
 def serialize_animal(animal_obj):
@@ -90,16 +61,10 @@ def write_animals_file(animals_text):
 
 
 def main():
-    load_dotenv()
-    api_key = os.getenv("API_KEY")
-    animal = get_animal_from_user()
-    animals_data = get_data_from_api(api_key, animal)
-    if len(animals_data) == 0:
-        output = f"<h2>The animal '{animal}' does not exist.</h2>"
-    else:
-        output = get_animal_data(animals_data)
+    animal_name = get_animal_from_user()
+    data = data_fetcher.fetch_data(animal_name)
     template = read_template('animals_template.html')
-    animals_text = add_animals_to_template(template, output)
+    animals_text = add_animals_to_template(template, data)
     write_animals_file(animals_text)
 
 

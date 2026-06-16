@@ -1,0 +1,4 @@
+os
+requests
+dotenv
+API_KEY for https://api-ninjas.com/
